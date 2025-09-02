@@ -14,12 +14,17 @@ RUN apk add --no-cache \
     gcc \
     musl-dev \
     openssl-dev \
-    zlib-dev
+    zlib-dev \
+    linux-headers
 
-# Install Perl modules required by imapsync
+# Install Alpine Perl packages for SSL support
+RUN apk add --no-cache \
+    perl-net-ssleay \
+    perl-io-socket-ssl
+
+# Install remaining Perl modules required by imapsync
 RUN cpanm --notest \
     Mail::IMAPClient \
-    IO::Socket::SSL \
     Digest::MD5 \
     Digest::HMAC_MD5 \
     Term::ReadKey \
@@ -32,13 +37,25 @@ RUN cpanm --notest \
     HTML::Entities \
     Encode::IMAPUTF7 \
     JSON \
-    CGI
+    CGI \
+    Authen::NTLM \
+    Crypt::OpenSSL::RSA \
+    Dist::CheckConflicts \
+    File::Copy::Recursive \
+    File::Tail \
+    IO::Tee \
+    Module::Implementation \
+    Package::Stash \
+    Readonly \
+    Regexp::Common \
+    Sys::MemInfo
 
 # Clone and install imapsync from GitHub
 WORKDIR /tmp
 RUN git clone https://github.com/imapsync/imapsync.git && \
     cd imapsync && \
-    make install
+    cp imapsync /usr/local/bin/ && \
+    chmod +x /usr/local/bin/imapsync
 
 # Runtime stage - Minimal Alpine with only runtime dependencies
 FROM alpine:3.20
@@ -55,6 +72,7 @@ RUN apk add --no-cache \
     perl-html-parser \
     perl-json \
     perl-cgi \
+    perl-net-ssleay \
     ca-certificates \
     tzdata \
     bash
@@ -62,6 +80,7 @@ RUN apk add --no-cache \
 # Copy imapsync and Perl modules from builder
 COPY --from=builder /usr/local/bin/imapsync /usr/local/bin/
 COPY --from=builder /usr/local/share/perl5 /usr/local/share/perl5
+COPY --from=builder /usr/local/lib/perl5 /usr/local/lib/perl5
 
 # Create non-root user for security
 RUN addgroup -g 1000 imapsync && \
@@ -71,10 +90,11 @@ RUN addgroup -g 1000 imapsync && \
 RUN mkdir -p /app/logs /app/data && \
     chown -R imapsync:imapsync /app
 
-# Copy sync script
+# Copy sync script and health check
 COPY sync-script.sh /app/
-RUN chmod +x /app/sync-script.sh && \
-    chown imapsync:imapsync /app/sync-script.sh
+COPY health-check.sh /app/
+RUN chmod +x /app/sync-script.sh /app/health-check.sh && \
+    chown imapsync:imapsync /app/sync-script.sh /app/health-check.sh
 
 # Switch to non-root user
 USER imapsync

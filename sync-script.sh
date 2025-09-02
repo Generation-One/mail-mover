@@ -97,7 +97,7 @@ build_sync_command() {
     [[ "${MOVE:-}" == "true" ]] && cmd+=" --delete1"
     
     # Performance and reliability flags
-    cmd+=" --useuid --automap --fastio --syncinternaldates --skipcrossduplicates"
+    cmd+=" --useuid --automap --fastio1 --fastio2 --syncinternaldates --skipcrossduplicates"
     
     # Logging and debug
     cmd+=" --debug --debugimap"

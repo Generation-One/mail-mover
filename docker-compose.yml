@@ -1,0 +1,86 @@
+services:
+  imap-sync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: imap-sync:latest
+    container_name: imap-sync
+    
+    # Environment configuration
+    env_file:
+      - .env
+    
+    # Restart policy for production
+    restart: unless-stopped
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        compress: "true"
+    
+    # Health check configuration
+    healthcheck:
+      test: ["CMD", "/app/health-check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Volume mounts for persistence
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    
+    # Network configuration
+    networks:
+      - imap-sync-network
+    
+    # Security context
+    user: "1000:1000"
+    
+    # Labels for management
+    labels:
+      - "com.docker.compose.project=imap-sync"
+      - "com.docker.compose.service=imap-sync"
+      - "maintainer=ops-team"
+      - "version=1.0.0"
+
+networks:
+  imap-sync-network:
+    driver: bridge
+    name: imap-sync-network
+
+# Optional: Add a monitoring service for production deployments
+# Uncomment the following section if you want to include basic monitoring
+#
+# services:
+#   monitoring:
+#     image: prom/node-exporter:latest
+#     container_name: imap-sync-monitoring
+#     restart: unless-stopped
+#     ports:
+#       - "9100:9100"
+#     networks:
+#       - imap-sync-network
+#     volumes:
+#       - /proc:/host/proc:ro
+#       - /sys:/host/sys:ro
+#       - /:/rootfs:ro
+#     command:
+#       - '--path.procfs=/host/proc'
+#       - '--path.rootfs=/rootfs'
+#       - '--path.sysfs=/host/sys'
+#       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
