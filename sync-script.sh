@@ -96,9 +96,18 @@ build_sync_command() {
     # Move mode (delete from source after successful copy)
     [[ "${MOVE:-}" == "true" ]] && cmd+=" --delete1"
     
+    # Date filtering - only sync emails from last N days (if configured)
+    if [[ -n "${DATE_FILTER_DAYS:-}" ]] && [[ "${DATE_FILTER_DAYS}" -gt 0 ]]; then
+        local days_ago="${DATE_FILTER_DAYS}"
+        cmd+=" --maxage $days_ago"
+        log "INFO" "Date filter enabled: syncing emails from last $days_ago days"
+    else
+        log "INFO" "No date filter applied: syncing all emails"
+    fi
+
     # Performance and reliability flags
     cmd+=" --useuid --automap --fastio1 --fastio2 --syncinternaldates --skipcrossduplicates"
-    
+
     # Logging and debug
     cmd+=" --debug --debugimap"
     
