@@ -75,7 +75,17 @@ RUN apk add --no-cache \
     perl-net-ssleay \
     ca-certificates \
     tzdata \
-    bash
+    bash \
+    python3 \
+    py3-pip
+
+# Install Python packages for IDLE and Push modes
+RUN pip3 install --no-cache-dir \
+    google-auth \
+    google-auth-oauthlib \
+    google-auth-httplib2 \
+    google-api-python-client \
+    google-cloud-pubsub
 
 # Copy imapsync and Perl modules from builder
 COPY --from=builder /usr/local/bin/imapsync /usr/local/bin/
@@ -90,11 +100,14 @@ RUN addgroup -g 1000 imapsync && \
 RUN mkdir -p /app/logs /app/data && \
     chown -R imapsync:imapsync /app
 
-# Copy sync script and health check
+# Copy sync script, health check, Python scripts, and setup script
 COPY sync-script.sh /app/
 COPY health-check.sh /app/
-RUN chmod +x /app/sync-script.sh /app/health-check.sh && \
-    chown imapsync:imapsync /app/sync-script.sh /app/health-check.sh
+COPY imap-idle-sync.py /app/
+COPY gmail-push-sync.py /app/
+COPY setup-connection-mode.sh /app/
+RUN chmod +x /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh && \
+    chown imapsync:imapsync /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh
 
 # Switch to non-root user
 USER imapsync

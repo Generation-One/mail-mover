@@ -4,8 +4,11 @@ A production-ready containerized service that synchronizes emails between IMAP s
 
 ## Features
 
+- **Multiple sync modes** to avoid rate limits:
+  - **Poll mode**: Traditional polling (default)
+  - **IDLE mode**: Real-time IMAP IDLE connections
+  - **Push mode**: Gmail Push Notifications via Pub/Sub
 - **One-way synchronization** from source to destination IMAP server
-- **Configurable polling interval** (default: 15 seconds)
 - **Optional move mode** that deletes emails from source after successful copy
 - **SSL/TLS support** for secure connections
 - **Credential validation** on startup
@@ -37,6 +40,9 @@ PASSWORD_1=your_app_password
 HOST_2=imap.destination.com
 USER_2=destination@example.com
 PASSWORD_2=your_password
+
+# Sync mode (poll/idle/push) - see CONNECTION-MODES.md
+SYNC_MODE=idle  # Recommended for Gmail to avoid rate limits
 ```
 
 ### 3. Deploy with Docker Compose
@@ -212,9 +218,16 @@ make backup        # Backup logs, data, and config
 - **Disk space**: Ensure sufficient space for logs and temporary files
 
 ### Performance Issues
-- **Increase polling interval**: Set `POLL_SECONDS` to higher value
+- **Rate limiting**: Switch to IDLE or Push mode (see CONNECTION-MODES.md)
+- **Increase polling interval**: Set `POLL_SECONDS` to higher value (poll mode only)
 - **Resource limits**: Adjust Docker memory/CPU limits
 - **Network latency**: Consider server proximity
+
+### Rate Limit Issues (Gmail)
+- **Switch to IDLE mode**: Set `SYNC_MODE=idle` in `.env`
+- **Use Push notifications**: Set `SYNC_MODE=push` (requires Google Cloud setup)
+- **Increase poll interval**: Set `POLL_SECONDS=60` or higher
+- **See detailed guide**: Read `CONNECTION-MODES.md` for full setup instructions
 
 ### Common Error Messages
 

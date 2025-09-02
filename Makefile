@@ -145,3 +145,20 @@ prod-deploy: check-config build start ## Deploy to production (check config, bui
 # Quick status check
 quick-status: ## Quick status check
 	@docker-compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
+
+# Connection mode setup
+setup-idle: ## Switch to IDLE mode (recommended for Gmail)
+	@chmod +x setup-connection-mode.sh
+	@./setup-connection-mode.sh idle
+
+setup-push: ## Switch to Push mode (requires Google Cloud setup)
+	@chmod +x setup-connection-mode.sh
+	@./setup-connection-mode.sh push
+
+setup-poll: ## Switch to Poll mode (traditional polling)
+	@chmod +x setup-connection-mode.sh
+	@./setup-connection-mode.sh poll
+
+connection-help: ## Show connection mode help
+	@chmod +x setup-connection-mode.sh
+	@./setup-connection-mode.sh help

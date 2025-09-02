@@ -140,6 +140,50 @@ update_health() {
     echo "$(date '+%s')" >> "$HEALTH_FILE"
 }
 
+# IMAP IDLE mode - keeps connection open
+start_idle_mode() {
+    log "INFO" "Starting IMAP IDLE synchronization..."
+
+    # Check if Python IDLE script exists
+    if [[ -f "/app/imap-idle-sync.py" ]]; then
+        python3 /app/imap-idle-sync.py
+    else
+        log "ERROR" "IMAP IDLE script not found, falling back to polling mode"
+        start_poll_mode
+    fi
+}
+
+# Gmail Push Notification mode
+start_push_mode() {
+    log "INFO" "Starting Gmail Push Notification synchronization..."
+
+    # Check if Gmail push script exists
+    if [[ -f "/app/gmail-push-sync.py" ]]; then
+        python3 /app/gmail-push-sync.py
+    else
+        log "ERROR" "Gmail Push script not found, falling back to polling mode"
+        start_poll_mode
+    fi
+}
+
+# Traditional polling mode (original behavior)
+start_poll_mode() {
+    log "INFO" "Starting traditional polling mode..."
+
+    # Main sync loop
+    while true; do
+        update_health
+
+        if sync_emails; then
+            log "INFO" "Sync cycle completed, waiting ${POLL_SECONDS:-15} seconds..."
+        else
+            log "WARN" "Sync cycle failed, waiting ${POLL_SECONDS:-15} seconds before retry..."
+        fi
+
+        sleep "${POLL_SECONDS:-15}"
+    done
+}
+
 # Main execution
 main() {
     log "INFO" "IMAP Synchronization Service starting..."
@@ -160,18 +204,23 @@ main() {
         exit 1
     fi
     
-    # Main sync loop
-    while true; do
-        update_health
-        
-        if sync_emails; then
-            log "INFO" "Sync cycle completed, waiting ${POLL_SECONDS:-15} seconds..."
-        else
-            log "WARN" "Sync cycle failed, waiting ${POLL_SECONDS:-15} seconds before retry..."
-        fi
-        
-        sleep "${POLL_SECONDS:-15}"
-    done
+    # Choose sync mode based on configuration
+    local sync_mode="${SYNC_MODE:-poll}"
+
+    case "$sync_mode" in
+        "idle")
+            log "INFO" "Starting IMAP IDLE mode..."
+            start_idle_mode
+            ;;
+        "push")
+            log "INFO" "Starting Gmail Push Notification mode..."
+            start_push_mode
+            ;;
+        *)
+            log "INFO" "Starting polling mode..."
+            start_poll_mode
+            ;;
+    esac
 }
 
 # Start main execution
