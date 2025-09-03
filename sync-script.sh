@@ -65,8 +65,29 @@ load_env_file() {
     return 0
 }
 
-# Validate required environment variables
+# Validate required environment variables (with alternative names)
 validate_config() {
+    # Map alternative variable names to standard names
+    [[ -z "${HOST_1:-}" && -n "${SOURCE_HOST:-}" ]] && export HOST_1="$SOURCE_HOST"
+    [[ -z "${HOST_2:-}" && -n "${DEST_HOST:-}" ]] && export HOST_2="$DEST_HOST"
+    [[ -z "${HOST_2:-}" && -n "${DESTINATION_HOST:-}" ]] && export HOST_2="$DESTINATION_HOST"
+
+    [[ -z "${USER_1:-}" && -n "${SOURCE_USER:-}" ]] && export USER_1="$SOURCE_USER"
+    [[ -z "${USER_2:-}" && -n "${DEST_USER:-}" ]] && export USER_2="$DEST_USER"
+    [[ -z "${USER_2:-}" && -n "${DESTINATION_USER:-}" ]] && export USER_2="$DESTINATION_USER"
+
+    [[ -z "${PASSWORD_1:-}" && -n "${SOURCE_PASSWORD:-}" ]] && export PASSWORD_1="$SOURCE_PASSWORD"
+    [[ -z "${PASSWORD_2:-}" && -n "${DEST_PASSWORD:-}" ]] && export PASSWORD_2="$DEST_PASSWORD"
+    [[ -z "${PASSWORD_2:-}" && -n "${DESTINATION_PASSWORD:-}" ]] && export PASSWORD_2="$DESTINATION_PASSWORD"
+
+    # Also check for common Portainer/Docker naming patterns
+    [[ -z "${HOST_1:-}" && -n "${IMAP_SOURCE_HOST:-}" ]] && export HOST_1="$IMAP_SOURCE_HOST"
+    [[ -z "${HOST_2:-}" && -n "${IMAP_DEST_HOST:-}" ]] && export HOST_2="$IMAP_DEST_HOST"
+    [[ -z "${USER_1:-}" && -n "${IMAP_SOURCE_USER:-}" ]] && export USER_1="$IMAP_SOURCE_USER"
+    [[ -z "${USER_2:-}" && -n "${IMAP_DEST_USER:-}" ]] && export USER_2="$IMAP_DEST_USER"
+    [[ -z "${PASSWORD_1:-}" && -n "${IMAP_SOURCE_PASSWORD:-}" ]] && export PASSWORD_1="$IMAP_SOURCE_PASSWORD"
+    [[ -z "${PASSWORD_2:-}" && -n "${IMAP_DEST_PASSWORD:-}" ]] && export PASSWORD_2="$IMAP_DEST_PASSWORD"
+
     local required_vars=("HOST_1" "USER_1" "PASSWORD_1" "HOST_2" "USER_2" "PASSWORD_2")
     local missing_vars=()
 
@@ -79,7 +100,13 @@ validate_config() {
     if [[ ${#missing_vars[@]} -gt 0 ]]; then
         log "ERROR" "Missing required environment variables: ${missing_vars[*]}"
         log "INFO" "Available environment files: .env.test, .env, .env.example"
-        log "INFO" "Or set variables directly: HOST_1, USER_1, PASSWORD_1, HOST_2, USER_2, PASSWORD_2"
+        log "INFO" "Set these variables in Portainer:"
+        log "INFO" "  HOST_1 (or SOURCE_HOST) = source IMAP server"
+        log "INFO" "  USER_1 (or SOURCE_USER) = source email address"
+        log "INFO" "  PASSWORD_1 (or SOURCE_PASSWORD) = source app password"
+        log "INFO" "  HOST_2 (or DEST_HOST) = destination IMAP server"
+        log "INFO" "  USER_2 (or DEST_USER) = destination email address"
+        log "INFO" "  PASSWORD_2 (or DEST_PASSWORD) = destination app password"
 
         # Debug: Show all environment variables that start with HOST_, USER_, PASSWORD_
         log "DEBUG" "Environment variables starting with HOST_:"
@@ -88,6 +115,10 @@ validate_config() {
         env | grep "^USER_" || log "DEBUG" "No USER_ variables found"
         log "DEBUG" "Environment variables starting with PASSWORD_:"
         env | grep "^PASSWORD_" || log "DEBUG" "No PASSWORD_ variables found"
+
+        # Check for alternative naming patterns
+        log "DEBUG" "Alternative naming patterns:"
+        env | grep -E "^(SOURCE_|DEST_|DESTINATION_|IMAP_)" || log "DEBUG" "No alternative patterns found"
 
         # Show all environment variables for debugging
         log "DEBUG" "All environment variables:"

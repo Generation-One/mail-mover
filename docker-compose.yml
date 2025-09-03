@@ -6,9 +6,9 @@ services:
     image: imap-sync:latest
     container_name: mail-mover
     
-    # Production-ready: No .env file dependency
-    # Environment variables should be set via orchestrator (Portainer, etc.)
-    # For local development, use docker-compose.override.yml
+    # Environment configuration - fallback to .env if .env.test doesn't exist
+    #env_file:
+    #  - .env
     
     # Restart policy for production
     restart: unless-stopped
@@ -49,7 +49,7 @@ services:
       - mail-mover-network
     
     # Security context
-    user: "0:0"
+    user: "1000:1000"
     
     # Labels for management
     labels:
