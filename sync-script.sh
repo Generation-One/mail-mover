@@ -38,7 +38,9 @@ log() {
 # Signal handlers for graceful shutdown
 cleanup() {
     log "INFO" "Received shutdown signal, cleaning up..."
-    rm -f "$PID_FILE" "$HEALTH_FILE"
+    # Only remove files if they were successfully created
+    [[ -n "$PID_FILE" && -f "$PID_FILE" ]] && rm -f "$PID_FILE"
+    [[ -f "$HEALTH_FILE" ]] && rm -f "$HEALTH_FILE"
     exit 0
 }
 
@@ -301,8 +303,13 @@ main() {
     log "INFO" "IMAP Synchronization Service starting..."
     log "INFO" "Version: 1.1.0"
 
-    # Store PID
-    echo $$ > "$PID_FILE"
+    # Store PID (with error handling)
+    if ! echo $$ > "$PID_FILE" 2>/dev/null; then
+        log "WARN" "Could not write PID file to $PID_FILE, continuing without PID file"
+        PID_FILE=""  # Disable PID file usage
+    else
+        log "INFO" "PID file created: $PID_FILE"
+    fi
 
     # Load environment file if available
     load_env_file

@@ -3,6 +3,10 @@
 .env.local
 .env.production
 
+# Docker Compose overrides for specific environments
+docker-compose.prod.yml
+docker-compose.local.yml
+
 # Logs
 logs/
 *.log
