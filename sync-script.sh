@@ -80,6 +80,19 @@ validate_config() {
         log "ERROR" "Missing required environment variables: ${missing_vars[*]}"
         log "INFO" "Available environment files: .env.test, .env, .env.example"
         log "INFO" "Or set variables directly: HOST_1, USER_1, PASSWORD_1, HOST_2, USER_2, PASSWORD_2"
+
+        # Debug: Show all environment variables that start with HOST_, USER_, PASSWORD_
+        log "DEBUG" "Environment variables starting with HOST_:"
+        env | grep "^HOST_" || log "DEBUG" "No HOST_ variables found"
+        log "DEBUG" "Environment variables starting with USER_:"
+        env | grep "^USER_" || log "DEBUG" "No USER_ variables found"
+        log "DEBUG" "Environment variables starting with PASSWORD_:"
+        env | grep "^PASSWORD_" || log "DEBUG" "No PASSWORD_ variables found"
+
+        # Show all environment variables for debugging
+        log "DEBUG" "All environment variables:"
+        env | sort
+
         log "INFO" "Container will wait for environment variables to be configured..."
 
         # Wait indefinitely instead of exiting (prevents restart loop)
