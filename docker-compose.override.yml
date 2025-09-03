@@ -1,12 +1,12 @@
-# Docker Compose Override for Production/Remote Deployments
-# This file is automatically loaded by docker-compose and overrides base settings
-# Use this for production deployments with Portainer or other orchestrators
+# Docker Compose Override for Local Development
+# This file enables .env file loading for local development
+# For production/remote deployments, rename this file or use a different override
 
 services:
   mail-mover:
-    # Override environment file loading for production
-    # Comment out env_file to rely on environment variables from orchestrator
-    env_file: []
+    # Enable .env file for local development
+    env_file:
+      - .env
     
     # Production-specific resource limits
     deploy:
