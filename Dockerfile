@@ -97,20 +97,22 @@ COPY --from=builder /usr/local/lib/perl5 /usr/local/lib/perl5
 RUN addgroup -g 1000 imapsync && \
     adduser -D -u 1000 -G imapsync -s /bin/bash imapsync
 
-# Create directories for logs and data
+# Create directories for logs and data with proper permissions
 RUN mkdir -p /app/logs /app/data && \
-    chown -R imapsync:imapsync /app
+    chown -R imapsync:imapsync /app && \
+    chmod -R 755 /app/logs /app/data
 
-# Copy sync script, health check, Python scripts, setup script, ps wrapper, and sleep wrapper
+# Copy sync script, health check, Python scripts, setup script, ps wrapper, sleep wrapper, and permission fix script
 COPY sync-script.sh /app/
 COPY health-check.sh /app/
 COPY imap-idle-sync.py /app/
 COPY gmail-push-sync.py /app/
 COPY setup-connection-mode.sh /app/
+COPY fix-permissions.sh /app/
 COPY ps-wrapper.sh /usr/local/bin/ps
 COPY sleep-wrapper.sh /usr/local/bin/sleep
-RUN chmod +x /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh /usr/local/bin/ps /usr/local/bin/sleep && \
-    chown imapsync:imapsync /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh
+RUN chmod +x /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh /app/fix-permissions.sh /usr/local/bin/ps /usr/local/bin/sleep && \
+    chown imapsync:imapsync /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh /app/fix-permissions.sh
 
 # Switch to non-root user
 USER imapsync

@@ -11,14 +11,28 @@ LOG_FILE="${SCRIPT_DIR}/logs/imapsync.log"
 PID_FILE="${SCRIPT_DIR}/data/imapsync.pid"
 HEALTH_FILE="${SCRIPT_DIR}/data/health"
 
+# Fix permissions for mounted volumes first
+if [[ -f "${SCRIPT_DIR}/fix-permissions.sh" ]]; then
+    bash "${SCRIPT_DIR}/fix-permissions.sh"
+fi
+
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")" "$(dirname "$PID_FILE")"
 
-# Logging function
+# Try to create log file with proper permissions
+touch "$LOG_FILE" 2>/dev/null || true
+chmod 644 "$LOG_FILE" 2>/dev/null || true
+
+# Logging function with fallback for permission issues
 log() {
     local level="$1"
     shift
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $*" | tee -a "$LOG_FILE"
+    local message="[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $*"
+
+    # Try to write to log file, fallback to stdout only if it fails
+    if ! echo "$message" | tee -a "$LOG_FILE" 2>/dev/null; then
+        echo "$message"
+    fi
 }
 
 # Signal handlers for graceful shutdown

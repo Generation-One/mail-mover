@@ -7,8 +7,8 @@ services:
     container_name: mail-mover
     
     # Environment configuration - fallback to .env if .env.test doesn't exist
-    #env_file:
-    #  - .env
+    # env_file:
+    #   - .env
     
     # Restart policy for production
     restart: unless-stopped
