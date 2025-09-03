@@ -115,8 +115,6 @@ COPY sleep-wrapper.sh /usr/local/bin/sleep
 RUN chmod +x /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh /app/fix-permissions.sh /app/test-env.sh /usr/local/bin/ps /usr/local/bin/sleep && \
     chown imapsync:imapsync /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh /app/fix-permissions.sh /app/test-env.sh
 
-# Switch to non-root user
-USER imapsync
 WORKDIR /app
 
 # Environment variables with defaults
@@ -133,4 +131,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD /app/health-check.sh
 
 # Default command
-CMD ["/app/sync-script.sh"]
+CMD ["/bin/bash", "/app/sync-script.sh"]
