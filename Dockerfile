@@ -80,7 +80,8 @@ RUN apk add --no-cache \
     py3-pip
 
 # Install Python packages for IDLE and Push modes
-RUN pip3 install --no-cache-dir \
+# Use --break-system-packages for Alpine Linux compatibility
+RUN pip3 install --no-cache-dir --break-system-packages \
     google-auth \
     google-auth-oauthlib \
     google-auth-httplib2 \
@@ -100,13 +101,15 @@ RUN addgroup -g 1000 imapsync && \
 RUN mkdir -p /app/logs /app/data && \
     chown -R imapsync:imapsync /app
 
-# Copy sync script, health check, Python scripts, and setup script
+# Copy sync script, health check, Python scripts, setup script, ps wrapper, and sleep wrapper
 COPY sync-script.sh /app/
 COPY health-check.sh /app/
 COPY imap-idle-sync.py /app/
 COPY gmail-push-sync.py /app/
 COPY setup-connection-mode.sh /app/
-RUN chmod +x /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh && \
+COPY ps-wrapper.sh /usr/local/bin/ps
+COPY sleep-wrapper.sh /usr/local/bin/sleep
+RUN chmod +x /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh /usr/local/bin/ps /usr/local/bin/sleep && \
     chown imapsync:imapsync /app/sync-script.sh /app/health-check.sh /app/imap-idle-sync.py /app/gmail-push-sync.py /app/setup-connection-mode.sh
 
 # Switch to non-root user

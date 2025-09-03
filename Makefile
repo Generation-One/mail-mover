@@ -162,3 +162,26 @@ setup-poll: ## Switch to Poll mode (traditional polling)
 connection-help: ## Show connection mode help
 	@chmod +x setup-connection-mode.sh
 	@./setup-connection-mode.sh help
+
+# IMAP connection testing
+test-imap: ## Test IMAP connections (both source and destination)
+	@echo "Testing IMAP connections..."
+	@bash test-imap-quick.sh
+
+test-imap-source: ## Test source IMAP connection only
+	@echo "Testing source IMAP connection..."
+	@bash test-imap-simple.sh --source
+
+test-imap-dest: ## Test destination IMAP connection only
+	@echo "Testing destination IMAP connection..."
+	@bash test-imap-simple.sh --dest
+
+test-imap-python: ## Run comprehensive Python IMAP tests
+	@if [ -f .env ]; then \
+		echo "Running comprehensive IMAP tests..."; \
+		set -a && source .env && set +a && \
+		python3 test-imap-connection.py --host "$$HOST_1" --username "$$USER_1" --password "$$PASSWORD_1" --stability-duration 10; \
+	else \
+		echo "Error: .env file not found"; \
+		exit 1; \
+	fi

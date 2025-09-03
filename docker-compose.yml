@@ -6,9 +6,9 @@ services:
     image: imap-sync:latest
     container_name: imap-sync
     
-    # Environment configuration
-    #env_file:
-    #  - .env
+    # Environment configuration - fallback to .env if .env.test doesn't exist
+    env_file:
+      - .env
     
     # Restart policy for production
     restart: unless-stopped
