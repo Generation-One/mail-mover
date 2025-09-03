@@ -29,10 +29,11 @@ log() {
     shift
     local message="[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $*"
 
-    # Try to write to log file, fallback to stdout only if it fails
-    if ! echo "$message" | tee -a "$LOG_FILE" 2>/dev/null; then
-        echo "$message"
-    fi
+    # Always output to stdout (for Docker logs)
+    echo "$message"
+
+    # Try to also write to log file (best effort, don't duplicate on failure)
+    echo "$message" >> "$LOG_FILE" 2>/dev/null || true
 }
 
 # Signal handlers for graceful shutdown
