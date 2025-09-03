@@ -1,10 +1,10 @@
 services:
-  imap-sync:
+  mail-mover:
     build:
       context: .
       dockerfile: Dockerfile
     image: imap-sync:latest
-    container_name: imap-sync
+    container_name: mail-mover
     
     # Environment configuration - fallback to .env if .env.test doesn't exist
     #env_file:
@@ -46,22 +46,22 @@ services:
     
     # Network configuration
     networks:
-      - imap-sync-network
+      - mail-mover-network
     
     # Security context
     user: "1000:1000"
     
     # Labels for management
     labels:
-      - "com.docker.compose.project=imap-sync"
-      - "com.docker.compose.service=imap-sync"
+      - "com.docker.compose.project=mail-mover"
+      - "com.docker.compose.service=mail-mover"
       - "maintainer=ops-team"
       - "version=1.0.0"
 
 networks:
   imap-sync-network:
     driver: bridge
-    name: imap-sync-network
+    name: mail-mover-network
 
 # Optional: Add a monitoring service for production deployments
 # Uncomment the following section if you want to include basic monitoring
