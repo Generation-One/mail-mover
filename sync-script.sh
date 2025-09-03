@@ -79,7 +79,23 @@ validate_config() {
         log "ERROR" "Missing required environment variables: ${missing_vars[*]}"
         log "INFO" "Available environment files: .env.test, .env, .env.example"
         log "INFO" "Or set variables directly: HOST_1, USER_1, PASSWORD_1, HOST_2, USER_2, PASSWORD_2"
-        exit 1
+        log "INFO" "Container will wait for environment variables to be configured..."
+
+        # Wait indefinitely instead of exiting (prevents restart loop)
+        while [[ ${#missing_vars[@]} -gt 0 ]]; do
+            sleep 30
+            log "INFO" "Still waiting for environment variables: ${missing_vars[*]}"
+
+            # Re-check environment variables
+            missing_vars=()
+            for var in "${required_vars[@]}"; do
+                if [[ -z "${!var:-}" ]]; then
+                    missing_vars+=("$var")
+                fi
+            done
+        done
+
+        log "INFO" "Environment variables now available, continuing..."
     fi
 
     # Set defaults for optional variables

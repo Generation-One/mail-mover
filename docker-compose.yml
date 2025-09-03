@@ -6,10 +6,9 @@ services:
     image: imap-sync:latest
     container_name: mail-mover
     
-    # Environment configuration - .env file is optional
-    # For production/remote deployments, comment out env_file and use Portainer environment variables
-    # env_file:
-    #   - .env
+    # Production-ready: No .env file dependency
+    # Environment variables should be set via orchestrator (Portainer, etc.)
+    # For local development, use docker-compose.override.yml
     
     # Restart policy for production
     restart: unless-stopped

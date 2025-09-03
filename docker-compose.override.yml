@@ -1,50 +1,11 @@
-# Docker Compose Override for Local Development
-# This file enables .env file loading for local development
-# For production/remote deployments, rename this file or use a different override
+# Local Development Override
+# This file is automatically loaded by docker-compose for local development
+# It ONLY adds .env file loading - everything else uses base configuration
+#
+# For production/remote: rename this file to disable it
+# Example: mv docker-compose.override.yml docker-compose.override.yml.disabled
 
 services:
   mail-mover:
-    # Enable .env file for local development
     env_file:
       - .env
-    
-    # Production-specific resource limits
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
-          memory: 256M
-          cpus: '0.2'
-    
-    # Production logging with rotation
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "5"
-        compress: "true"
-    
-    # Production health check with longer intervals
-    healthcheck:
-      test: ["CMD", "/app/health-check.sh"]
-      interval: 60s
-      timeout: 15s
-      retries: 5
-      start_period: 60s
-    
-    # Production restart policy
-    restart: always
-    
-    # Production volumes - use named volumes instead of bind mounts
-    volumes:
-      - mail-mover-logs:/app/logs
-      - mail-mover-data:/app/data
-
-# Named volumes for production
-volumes:
-  mail-mover-logs:
-    driver: local
-  mail-mover-data:
-    driver: local
