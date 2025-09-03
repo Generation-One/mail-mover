@@ -59,7 +59,7 @@ services:
       - "version=1.0.0"
 
 networks:
-  imap-sync-network:
+  mail-mover-network:
     driver: bridge
     name: mail-mover-network
 
